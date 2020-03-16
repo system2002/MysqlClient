@@ -8,6 +8,12 @@ tmc::tmc():
     m_mysql = mysql_init(nullptr);
 }
 
+tmc::tmc(const std::string &AHost, const std::string &AUser, const std::string &APasswd, const std::string &ADb, unsigned int APort):
+    tmc()
+{
+    connect(AHost, AUser, APasswd, ADb, APort);
+}
+
 tmc::~tmc()
 {
     mysql_free_result(m_result);
@@ -91,24 +97,17 @@ std::string tmc::getServerInfo() const
 
 my_ulonglong tmc::serverUptime()
 {
+    /*
     if (!isConnected()) return 0;
     if (exec("SHOW GLOBAL STATUS LIKE 'Uptime';") && (next()))
     {
         return std::stol(value(1));
     }
     else return 0;
+    */
 }
 
-std::string tmc::value(const unsigned int &AColumn) const
-{
-    if (m_result == nullptr) return "";
-    const unsigned int columnCount = mysql_num_fields(m_result);
-    if (AColumn < columnCount)
-    {
-        return std::string(m_currRow[AColumn]);
-    }
-    else return "Out of range!";
-}
+
 
 unsigned int tmc::colCount() const
 {
@@ -124,55 +123,13 @@ unsigned int tmc::affected() const
 
 my_ulonglong tmc::insertId() const
 {
+    if (!isConnected()) return 0;
     return mysql_insert_id(m_mysql);
 }
-
-/*
-MYSQL_FIELD *tmc::columnPtr(const unsigned int &AColumn) const
-{
-    if (m_result == nullptr || !isConnected() || AColumn >= colCount()) return nullptr;
-    else return mysql_fetch_field_direct(m_result, AColumn);
-}
-*/
 
 TColumn tmc::column(const unsigned int &AColumn) const
 {
     return TColumn(mysql_fetch_field_direct(m_result, AColumn));
-}
-
-bool tmc::exec(const std::string &Aquery)
-{
-    if (!isConnected()) return false;
-    const char * sql = Aquery.c_str();
-    unsigned long length = Aquery.size();
-    int result = mysql_real_query(m_mysql, sql, length);
-    if (result == 0)
-    {
-        if (m_result != nullptr)
-        {
-            mysql_free_result(m_result);
-        }
-        m_result = mysql_store_result(m_mysql);
-        return true;
-    }
-    else
-    {
-        switch (result)
-        {
-            case CR_SERVER_GONE_ERROR:  m_isConnected = false; break;
-            case CR_SERVER_LOST:        m_isConnected = false; break;
-            default: break;
-        }
-        return false;
-    }
-}
-
-bool tmc::next()
-{
-    if (m_result == nullptr) return false;
-    m_currRow = mysql_fetch_row(m_result);
-    return m_currRow != nullptr;
-
 }
 
 bool tmc::isConnected() const

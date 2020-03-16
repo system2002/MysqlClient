@@ -5,10 +5,13 @@
 #include "column.h"
 #include <string>
 
+static const char* NULL_VALUE = "NULL";
+
 class tmc
 {
 public:
     tmc();
+    tmc(const std::string &AHost, const std::string &AUser, const std::string &APasswd, const std::string &ADb, unsigned int APort = 3306);
     ~tmc();
 
     static std::string clientInfo();
@@ -21,20 +24,19 @@ public:
     std::string getServerInfo() const;
     my_ulonglong serverUptime();
 
-    std::string value(const unsigned int & AColumn) const;
     unsigned int colCount() const;
     unsigned int affected() const;
     my_ulonglong insertId() const;
     TColumn column(const unsigned int & AColumn) const;
 
-
+    /*
     bool exec(const std::string & Aquery);
     bool next();
-
+    */
     bool isConnected() const;
 
 
-private:
+protected:
     bool m_isConnected;
     MYSQL * m_mysql;
     MYSQL_RES * m_result;
