@@ -54,6 +54,11 @@ unsigned long TColumn::length() const
     return m_column->length;
 }
 
+unsigned long TColumn::maxLength() const
+{
+    return m_column->max_length;
+}
+
 bool TColumn::isPrimaryKey() const
 {
     return IS_PRI_KEY(m_column->flags);

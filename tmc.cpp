@@ -1,11 +1,10 @@
 #include "tmc.h"
-
-
 tmc::tmc():
     m_mysql(nullptr),
     m_result(nullptr)
 {
     m_mysql = mysql_init(nullptr);
+    setCharset("utf8");
 }
 
 tmc::tmc(const std::string &AHost, const std::string &AUser, const std::string &APasswd, const std::string &ADb, unsigned int APort):
@@ -63,7 +62,6 @@ bool tmc::changeBase(const std::string &ADb)
     {
         return false;
     }
-
 }
 
 std::string tmc::info() const
@@ -105,6 +103,11 @@ my_ulonglong tmc::serverUptime()
     }
     else return 0;
     */
+}
+
+int tmc::setCharset(const std::string &ACharsetName)
+{
+    return mysql_set_character_set(m_mysql, ACharsetName.c_str());
 }
 
 

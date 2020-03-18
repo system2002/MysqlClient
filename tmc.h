@@ -23,6 +23,7 @@ public:
     std::string getServerStatus() const;
     std::string getServerInfo() const;
     my_ulonglong serverUptime();
+    int setCharset(const std::string & ACharsetName);
 
     unsigned int colCount() const;
     unsigned int affected() const;

@@ -12,6 +12,7 @@ public:
     enum_field_types type() const;
     inline std::string typeString() const { return typeString(type()); }
     unsigned long length() const;
+    unsigned long maxLength() const;
     bool isPrimaryKey() const;
     bool isNotNul() const;
     bool isBlob() const;
