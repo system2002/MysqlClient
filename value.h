@@ -2,6 +2,7 @@
 #define VALUE_H
 #include <string>
 #include <ctime>
+#include <cstring>
 #include <chrono>
 #include "mysql/mysql.h"
 

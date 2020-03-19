@@ -17,8 +17,9 @@ std::string Value::toString(const std::string &ifNull) const
         case trTime:
         {
             time_t t = getCTime(m_buffer);
+            unsigned int len = strlen(std::ctime(&t));
             std::string str(std::ctime(&t));
-            str.resize(m_length);
+            str.resize(len-1);
             return str;
         }
         case trInt: return std::to_string(getUInt64(m_buffer)); break;
@@ -68,7 +69,6 @@ std::chrono::time_point<std::chrono::system_clock> Value::toChronoTimePoint() co
             m_type == MYSQL_TYPE_DATETIME||
             m_type == MYSQL_TYPE_TIME)
     {
-
         return getChronoTimePoint(m_buffer);
     }
     return {};

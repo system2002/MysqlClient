@@ -15,7 +15,8 @@ int main()
 
     if (test)
     {
-        MQuery q("dev-mysql", "igp", "123", "test");
+        //MQuery q("dev-mysql", "igp", "123", "test");
+        MQuery q("192.168.0.5", "system", "1234", "term");
         if (!q.isConnected())
         {
             cout << q.lastErrorText() << endl;

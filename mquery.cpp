@@ -42,30 +42,35 @@ bool MQuery::exec(const std::string &Aquery)
             case MYSQL_TYPE_VAR_STRING:
             case MYSQL_TYPE_VARCHAR:
             case MYSQL_TYPE_JSON:
-            {
                 ib.bufferLength = maxLen;
-
-                // m_rowData.setItemLength(i, maxLen);
-                // m_bind[i].buffer_length = maxLen;
                 break;
-            }
-        case MYSQL_TYPE_DOUBLE:
-        case MYSQL_TYPE_LONGLONG:
-            ib.bufferLength = 8; break;
-        case MYSQL_TYPE_LONG:
+
+            case MYSQL_TYPE_DOUBLE:
+            case MYSQL_TYPE_LONGLONG:
+                ib.bufferLength = 8; break;
+
+            case MYSQL_TYPE_LONG:
+            case MYSQL_TYPE_FLOAT:
+                ib.bufferLength = 4; break;
+
+            case MYSQL_TYPE_SHORT:
+                ib.bufferLength = 2; break;
+
+            case MYSQL_TYPE_TINY:
+                ib.bufferLength = 1; break;
+
+            case MYSQL_TYPE_TIME:
+            case MYSQL_TYPE_DATETIME:
+            case MYSQL_TYPE_DATE:
+                ib.bufferLength = sizeof(MYSQL_TIME); break;
+
             default:
             {
-                //m_rowData.setItemLength(i, len);
-                //m_bind[i].buffer_length = len;
                 ib.bufferLength = len;
                 break;
             }
         }
         initBind.push_back(ib);
-        //m_bind[i].buffer = m_rowData.getBufferPtr(i);
-        //m_bind[i].is_null = &m_nullData[i];
-        //m_bind[i].length = &m_length[i];
-
     }
     if (!m_bindbuffer.prepareBind(initBind))
     {
