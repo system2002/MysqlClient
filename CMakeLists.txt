@@ -7,7 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(SOURCES /
     main.cpp /
-    rowdata.cpp
+    rowdata.cpp /
+    value.cpp /
+    bind.cpp /
     mquery.cpp /
     simple.cpp /
     tmc.cpp /

@@ -23,20 +23,59 @@ bool MQuery::exec(const std::string &Aquery)
     my_bool setMax = true;
     mysql_stmt_attr_set(m_stmt, STMT_ATTR_UPDATE_MAX_LENGTH, &setMax);
     const unsigned int cc = colCount();
-    memset(m_bind, 0, sizeof(MYSQL_BIND) * 10);
+    memset(m_bind, 0, sizeof(MYSQL_BIND) * 100);
     m_length.clear();
     m_length.resize(cc);
+    m_rowData.setSize(cc);
     if (mysql_stmt_store_result(m_stmt)) return false;
+    std::vector<InitBind> initBind;
     for (unsigned int i = 0; i < cc; i++)
     {
-        m_bind[i].buffer_type = MYSQL_TYPE_STRING;
         unsigned long maxLen = column(i).maxLength();
-        m_bind[i].buffer_length = maxLen;
-        m_data = new char (maxLen);
-        m_bind[i].buffer = m_data;
-        m_bind[i].length = &m_length[i];
+        unsigned long len = column(i).length();
+        //m_bind[i].buffer_type = column(i).type();
+        InitBind ib;
+        ib.type = column(i).type();
+        switch (column(i).type())
+        {
+            case MYSQL_TYPE_STRING:
+            case MYSQL_TYPE_VAR_STRING:
+            case MYSQL_TYPE_VARCHAR:
+            case MYSQL_TYPE_JSON:
+            {
+                ib.bufferLength = maxLen;
+
+                // m_rowData.setItemLength(i, maxLen);
+                // m_bind[i].buffer_length = maxLen;
+                break;
+            }
+        case MYSQL_TYPE_DOUBLE:
+        case MYSQL_TYPE_LONGLONG:
+            ib.bufferLength = 8; break;
+        case MYSQL_TYPE_LONG:
+            default:
+            {
+                //m_rowData.setItemLength(i, len);
+                //m_bind[i].buffer_length = len;
+                ib.bufferLength = len;
+                break;
+            }
+        }
+        initBind.push_back(ib);
+        //m_bind[i].buffer = m_rowData.getBufferPtr(i);
+        //m_bind[i].is_null = &m_nullData[i];
+        //m_bind[i].length = &m_length[i];
+
     }
-    if (mysql_stmt_bind_result(m_stmt, m_bind)) return false;
+    if (!m_bindbuffer.prepareBind(initBind))
+    {
+        std::cout << "Error init bind" << std::endl;
+        return false;
+    }
+
+    MYSQL_BIND * bind = &m_bindbuffer(0);
+
+    if (mysql_stmt_bind_result(m_stmt, bind)) return false;
     return true;
 }
 
@@ -74,8 +113,28 @@ std::string MQuery::rowString()
 
     //std::cout << std::string(m_data);
     //std::cout << std::string("абвгд").data() << std::endl;
-    result = std::string(m_data);
+
+    result = std::string(m_rowData.getBufferPtr(0));
     return result;
+}
+
+std::string MQuery::valueString(const unsigned int AColumn)
+{
+    std::string result;
+    result = std::string(m_rowData.getBufferPtr(AColumn));
+    result.resize(m_length[AColumn]);
+    return result;
+}
+
+unsigned long MQuery::valueLength(const unsigned int AColumn)
+{
+    return m_length[AColumn];
+}
+
+Value MQuery::value(const unsigned int AColumn)
+{
+    //return Value(m_bind[AColumn]);
+    return Value(m_bindbuffer(AColumn));
 }
 
 bool MQuery::initSTMT()

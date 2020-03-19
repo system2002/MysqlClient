@@ -5,7 +5,8 @@
 #include "mquery.h"
 #include <string>
 #include <map>
-#define SELECT_SAMPLE "SELECT Название FROM tree"
+#include <chrono>
+#define SELECT_SAMPLE "SELECT 'abcdy', 12, 'rrr', 'sdsdsd', 12.3, now() "
 using namespace std;
 
 int main()
@@ -41,11 +42,35 @@ int main()
         }
         while (q.next())
         {
-            cout <<"# " << endl;
-            cout << q.column(0).maxLength() << endl;
-            cout << q.rowString() << endl;
+            //cout <<"# " << endl;
+            //cout << q.column(0).maxLength() << endl;
+            for (unsigned int i = 0; i < q.colCount(); i++)
+            {
+                /*
+                std::chrono::time_point<std::chrono::system_clock> now;
+                    now = q.value(0).toChronoTimePoint();
+                    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+                    std::cout << "One day ago, the time was "
+                              << std::ctime(&now_c);
+                    tm *tt = localtime(&now_c);
+*/
+                cout <<q.value(i).toString() <<" | ";
+
+                /*
+                time_t time = q.value(0).toCTime();;
+                cout << ctime(&time) << endl;
+                tm *t = localtime(&time);
+                //cout << t->tm_mon << endl;
+
+                char buffer[100];
+                std::strftime(buffer, 32, "%a, %d.%m.%Y %H:%M:%S", t);
+                cout << buffer<<endl;
+                */
+
+            }
+            cout << endl;
         }
-        cout << q.lastErrorText() << endl;
+//        cout << q.lastErrorText()<< endl;
 
     }
     else
