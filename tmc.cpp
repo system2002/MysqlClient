@@ -140,3 +140,43 @@ bool tmc::isConnected() const
     return m_isConnected;
 }
 
+unsigned int tmc::sizeOfMyType(const enum_field_types &AType)
+{
+    unsigned int result;
+    switch (AType)
+    {
+        /*
+        case MYSQL_TYPE_STRING:
+        case MYSQL_TYPE_VAR_STRING:
+        case MYSQL_TYPE_VARCHAR:
+        case MYSQL_TYPE_JSON:
+            result = 0;
+            break;
+        */
+        case MYSQL_TYPE_DOUBLE:
+        case MYSQL_TYPE_LONGLONG:
+            result = 8; break;
+
+        case MYSQL_TYPE_LONG:
+        case MYSQL_TYPE_FLOAT:
+        case MYSQL_TYPE_INT24:
+            result = 4; break;
+
+        case MYSQL_TYPE_SHORT:
+            result = 2; break;
+
+        case MYSQL_TYPE_TINY:
+            result = 1; break;
+
+        case MYSQL_TYPE_TIME:
+        case MYSQL_TYPE_DATETIME:
+        case MYSQL_TYPE_DATE:
+            result = sizeof(MYSQL_TIME); break;
+        default:
+        {
+            result = 0; break;
+        }
+     }
+    return result;
+}
+

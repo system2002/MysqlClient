@@ -1,37 +1,38 @@
 #include "bind.h"
 
+static constexpr unsigned int LENGTH_SIZE = sizeof (unsigned long);
+static constexpr unsigned int IS_NULL_SIZE = sizeof (my_bool);
+
 Bind::Bind():
     m_buffer(nullptr)
-
-{
-
-}
+{}
 
 bool Bind::prepareBind(const std::vector<InitBind> &AInit)
 {
-    unsigned long count = AInit.size();
+    const unsigned long count = AInit.size();
     if (!m_bind.empty()) clear();
     if (m_buffer != nullptr) return false;
     m_bind.resize(count);
-    m_length.resize(count);
-    m_dataIsNull.resize(count);
-
     unsigned long buffSize = 0;
     unsigned long &offset = buffSize;
     for (unsigned long i = 0; i < count; i++)
     {
-        buffSize += AInit[i].bufferLength;
+        buffSize += (LENGTH_SIZE + IS_NULL_SIZE + AInit[i].bufferLength);
     }
     m_buffer = new char [buffSize];
+    memset(m_buffer, 0, buffSize);
     offset = 0;
     for (unsigned long i = 0; i < count; i++)
     {
-        m_bind[i].is_null = &m_dataIsNull[i];
-        m_bind[i].length = &m_length[i];
+        m_bind[i].length = reinterpret_cast<unsigned long*>(m_buffer + offset);
+        offset += LENGTH_SIZE;
+        m_bind[i].is_null = reinterpret_cast<my_bool*>(m_buffer + offset);
+        offset += IS_NULL_SIZE;
         m_bind[i].buffer = m_buffer + offset;
+        offset += AInit[i].bufferLength;
         m_bind[i].buffer_type = AInit[i].type;
         m_bind[i].buffer_length = AInit[i].bufferLength;
-        offset += AInit[i].bufferLength;
+        m_bind[i].is_unsigned = AInit[i].isUnsigned;
     }
     return true;
 }
@@ -47,8 +48,6 @@ MYSQL_BIND &Bind::operator()(const unsigned int &column)
 void Bind::clear()
 {
     m_bind.clear();
-    m_length.clear();
-    m_dataIsNull.clear();
-    delete m_buffer;
+    delete [] m_buffer;
     m_buffer = nullptr;
 }

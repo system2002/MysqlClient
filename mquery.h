@@ -17,10 +17,7 @@ public:
 
     bool exec(const std::string & Aquery);
     bool next();
-    std::string lastErrorText() const;
-    std::string rowString();
-    std::string valueString(const unsigned int AColumn);
-    unsigned long valueLength(const unsigned int AColumn);
+    //std::string lastErrorText() const;
     Value value(const unsigned int AColumn);
 
 
@@ -28,15 +25,7 @@ public:
 private:
     bool initSTMT();
     MYSQL_STMT * m_stmt;
-    MYSQL_BIND m_bind[100];
-    char m_nullData[100];
     Bind m_bindbuffer;
-
-    std::vector<unsigned long> m_length;
-    std::vector<char> m_buffer;
-    rowData m_rowData;
-    char * m_data;
-    char m_text[256];
 };
 
 #endif // MQUERY_H

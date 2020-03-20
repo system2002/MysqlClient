@@ -1,12 +1,24 @@
 #ifndef BIND_H
 #define BIND_H
 #include <vector>
+#include <cstring>
 #include "mysql/mysql.h"
+#include <ctime>
+
+
+#include <string>
+#include <ctime>
+#include <cstring>
+#include <chrono>
+#include <vector>
+#include "mysql/mysql.h"
+#include <iostream>
 
 struct InitBind
 {
     enum_field_types type;
     unsigned long bufferLength;
+    my_bool isUnsigned;
 };
 
 class Bind
@@ -18,8 +30,6 @@ public:
 
 private:
     std::vector<MYSQL_BIND> m_bind;
-    std::vector<unsigned long> m_length;
-    std::vector<char> m_dataIsNull;
     char * m_buffer;
     void clear();
 };

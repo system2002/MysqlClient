@@ -35,6 +35,7 @@ public:
     bool next();
     */
     bool isConnected() const;
+    static unsigned int sizeOfMyType(const enum_field_types & AType);
 
 
 protected:

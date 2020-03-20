@@ -6,7 +6,8 @@
 #include <string>
 #include <map>
 #include <chrono>
-#define SELECT_SAMPLE "SELECT 'abcdy', 12, 'rrr', 'sdsdsd', 12.3, now() "
+#define SELECT_SAMPLE "SELECT s24, u24 FROM test"
+//#define SELECT_SAMPLE "SELECT * from fr_dl11_import"
 using namespace std;
 
 int main()
@@ -15,8 +16,8 @@ int main()
 
     if (test)
     {
-        //MQuery q("dev-mysql", "igp", "123", "test");
-        MQuery q("192.168.0.5", "system", "1234", "term");
+        MQuery q("dev-mysql", "igp", "123", "test");
+        //MQuery q("192.168.0.5", "system", "1234", "term");
         if (!q.isConnected())
         {
             cout << q.lastErrorText() << endl;
@@ -43,33 +44,26 @@ int main()
         }
         while (q.next())
         {
+            for (unsigned int i = 0; i < q.colCount(); i++)
+            {
+                cout << q.value(i)() << " u:"<< q.column(i).isUnsigned() << " s: "<< q.value(i).size() << "\t|";
+            }
+            cout << endl;
+        }
+        if (!q.exec("select * from tree"))
+        {
+            cout << q.lastErrorText() << endl;
+            exit(2);
+        }
+        while (q.next())
+        {
             //cout <<"# " << endl;
             //cout << q.column(0).maxLength() << endl;
             for (unsigned int i = 0; i < q.colCount(); i++)
             {
-                /*
-                std::chrono::time_point<std::chrono::system_clock> now;
-                    now = q.value(0).toChronoTimePoint();
-                    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-                    std::cout << "One day ago, the time was "
-                              << std::ctime(&now_c);
-                    tm *tt = localtime(&now_c);
-*/
-                cout <<q.value(i).toString() <<" | ";
-
-                /*
-                time_t time = q.value(0).toCTime();;
-                cout << ctime(&time) << endl;
-                tm *t = localtime(&time);
-                //cout << t->tm_mon << endl;
-
-                char buffer[100];
-                std::strftime(buffer, 32, "%a, %d.%m.%Y %H:%M:%S", t);
-                cout << buffer<<endl;
-                */
-
+               // cout << q.value(i).toString() << " size: "<< q.value(i).size() << " | ";
             }
-            cout << endl;
+           // cout << endl;
         }
 //        cout << q.lastErrorText()<< endl;
 
@@ -102,7 +96,7 @@ int main()
             exit(0);
         }
         cout << "stmt init ok" << endl;
-        char* sql = "SELECT 1, 'abc', 11, now()";
+        const char* sql = "SELECT 1, 'abc', 11, now()";
         if (mysql_stmt_prepare(stmt, sql, strlen(sql)) !=0 )
         {
             cout << "mysql_stmt_prepare(), SELECT failed\n" << endl;
