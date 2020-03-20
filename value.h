@@ -17,6 +17,22 @@ enum typeReturn : uint8_t
 
 };
 
+enum numberMode :uint8_t
+{
+    nmNone,
+    nmU8,   // unsigned  8 bit (1 byte)
+    nmS8,   //   signed  8 bit (1 byte)
+    nmU16,  // unsigned 16 bit (2 byte)
+    nmS16,  //   signed 16 bit (2 byte)
+    nmU32,  // unsigned 32 bit (3 byte)
+    nmS32,  //   signed 32 bit (3 byte)
+    nmU64,  // unsigned 64 bit (4 byte)
+    nmS64,  //   signed 64 bit (4 byte)
+    nmDouble,
+    nmFloat,
+    nmNewDemical
+};
+
 class Value
 {
 public:
@@ -43,6 +59,7 @@ public:
     std::chrono::time_point<std::chrono::system_clock> toChronoTimePoint() const;
 
 private:
+    numberMode m_nMode;
     const MYSQL_BIND& m_bind;
     const unsigned long &m_length;
     void* m_buffer;
@@ -51,16 +68,22 @@ private:
     std::vector<char*> m_autoremove;
 
     std::string getString() const;
-    int32_t getInt32() const;
-    int64_t getInt64() const;
-    uint32_t getUInt32() const;
-    uint64_t getUInt64() const;
+    int8_t      getInt8()   const;
+    int16_t     getInt16()  const;
+    int32_t     getInt32()  const;
+    int64_t     getInt64()  const;
+
+    uint8_t     getUInt8()  const;
+    uint16_t    getUInt16() const;
+    uint32_t    getUInt32() const;
+    uint64_t    getUInt64() const;
+    double      getDouble() const;
+    float       getFloat()  const;
+
     MYSQL_TIME getMySQLTime() const;
     time_t getCTime() const;
     std::chrono::time_point<std::chrono::system_clock> getChronoTimePoint() const;
     typeReturn getType(const enum_field_types& AType) const;
-    double getDouble() const;
-    float getFloat() const;
 };
 
 #endif // VALUE_H

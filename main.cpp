@@ -6,7 +6,7 @@
 #include <string>
 #include <map>
 #include <chrono>
-#define SELECT_SAMPLE "SELECT s24, u24 FROM test"
+#define SELECT_SAMPLE "SELECT *, 18446744073709551615 from test "
 //#define SELECT_SAMPLE "SELECT * from fr_dl11_import"
 using namespace std;
 
@@ -16,8 +16,8 @@ int main()
 
     if (test)
     {
-        MQuery q("dev-mysql", "igp", "123", "test");
-        //MQuery q("192.168.0.5", "system", "1234", "term");
+  //      MQuery q("dev-mysql", "igp", "123", "test");
+        MQuery q("192.168.0.5", "system", "1234", "test");
         if (!q.isConnected())
         {
             cout << q.lastErrorText() << endl;
@@ -31,6 +31,7 @@ int main()
         }
         cout << "select Ok" << endl;
         cout << "col count:" << q.colCount() << endl;
+
         for (unsigned int i = 0; i < q.colCount(); i++)
         {
             cout <<"col["<< i << "] name:" << q.column(i).name() << endl;
@@ -42,11 +43,12 @@ int main()
             cout <<"col["<< i << "] unsigned:" << q.column(i).isUnsigned() << endl;
             cout <<"col["<< i << "] isNotNull:" << q.column(i).isNotNul() << endl;
         }
+
         while (q.next())
         {
             for (unsigned int i = 0; i < q.colCount(); i++)
             {
-                cout << q.value(i)() << " u:"<< q.column(i).isUnsigned() << " s: "<< q.value(i).size() << "\t|";
+                cout << q.value(i).toInt64() << " u:"<< q.column(i).isUnsigned() << " s: "<< q.value(i).size() << "\t|";
             }
             cout << endl;
         }
