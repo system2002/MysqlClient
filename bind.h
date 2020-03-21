@@ -13,6 +13,7 @@
 #include <vector>
 #include "mysql/mysql.h"
 #include <iostream>
+#include "value.h"
 
 struct InitBind
 {
@@ -25,7 +26,7 @@ class Bind
 {
 public:
     Bind();
-    bool prepareBind(const std::vector<InitBind>& AInit);
+    bool prepareBind(const std::vector<InitBind>& AInit, std::vector<Value> & AValue);
     MYSQL_BIND & operator() (const unsigned int & column);
 
 private:

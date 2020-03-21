@@ -7,9 +7,11 @@ Bind::Bind():
     m_buffer(nullptr)
 {}
 
-bool Bind::prepareBind(const std::vector<InitBind> &AInit)
+bool Bind::prepareBind(const std::vector<InitBind> &AInit, std::vector<Value> &AValue)
 {
     const unsigned long count = AInit.size();
+    AValue.clear();
+    AValue.reserve(count);
     if (!m_bind.empty()) clear();
     if (m_buffer != nullptr) return false;
     m_bind.resize(count);
@@ -33,6 +35,8 @@ bool Bind::prepareBind(const std::vector<InitBind> &AInit)
         m_bind[i].buffer_type = AInit[i].type;
         m_bind[i].buffer_length = AInit[i].bufferLength;
         m_bind[i].is_unsigned = AInit[i].isUnsigned;
+        *m_bind[i].length = AInit[i].bufferLength;
+        AValue.emplace_back(m_bind[i]);
     }
     return true;
 }

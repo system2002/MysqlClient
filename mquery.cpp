@@ -28,14 +28,13 @@ bool MQuery::exec(const std::string &Aquery)
     for (unsigned int i = 0; i < cc; i++)
     {
         unsigned long maxLen = column(i).maxLength();
-//        unsigned long len = column(i).length();
         initBind[i].type = column(i).type();
         initBind[i].isUnsigned = column(i).isUnsigned();
         initBind[i].bufferLength = tmc::sizeOfMyType(column(i).type());
         if (initBind[i].bufferLength == 0)
             initBind[i].bufferLength = maxLen;
     }
-    if (!m_bindbuffer.prepareBind(initBind))
+    if (!m_bindbuffer.prepareBind(initBind, m_value))
     {
         std::cout << "Error init bind" << std::endl;
         return false;
@@ -53,19 +52,28 @@ bool MQuery::next()
     return mysql_stmt_fetch(m_stmt) != MYSQL_NO_DATA;
 }
 
-/*
-std::string MQuery::lastErrorText() const
-{
-    std::string result;
-    result = tmc::lastErrorText() + " | " + mysql_stmt_error(m_stmt);
-    return result;
-}
-*/
 Value MQuery::value(const unsigned int AColumn)
 {
+    /*
     if (AColumn < colCount())
     return Value(m_bindbuffer(AColumn));
     else return Value(m_bindbuffer(AColumn % colCount()));
+    */
+    if (AColumn < colCount())
+    return m_value[AColumn];
+    else return m_value[AColumn % colCount()];
+}
+
+std::set<std::string> MQuery::strToSet(const std::string &AStr)
+{
+    /*
+    regex reg("^|,\W,");
+    string str("qweqew,qweq,qwe1,qwe2,qwe3,qew");
+    //match_results<string> result;
+    std::smatch match;
+    regex_search(str, match, reg);
+    cout << match.size();
+    */
 }
 
 bool MQuery::initSTMT()

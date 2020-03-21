@@ -1,10 +1,11 @@
 #include "value.h"
 
-static constexpr int SIZE8  = sizeof (int8_t);
-static constexpr int SIZE16 = sizeof (int16_t);
-static constexpr int SIZE32 = sizeof (int32_t);
-static constexpr int SIZE64 = sizeof (int64_t);
-static constexpr int SIZE_BYTE = sizeof (char);
+static constexpr unsigned int SIZE8  = sizeof (int8_t);
+static constexpr unsigned int SIZE16 = sizeof (int16_t);
+static constexpr unsigned int SIZE32 = sizeof (int32_t);
+static constexpr unsigned int SIZE64 = sizeof (int64_t);
+           const char*        TIME_FORMAT = "%04d.%02d.%02d %02d:%02d:%02d"; //YYYY.MM.DD HH:mm:ss
+static constexpr unsigned int TIME_FORMAT_SIZE = 19; // = strlen(TIME_FORMAT)
 
 Value::Value(const MYSQL_BIND& ABind):
     m_bind(ABind),
@@ -46,65 +47,79 @@ Value::Value(const MYSQL_BIND& ABind):
                 break;
             }
         }
-        case MYSQL_TYPE_DOUBLE: m_nMode = nmDouble; break;
-        case MYSQL_TYPE_FLOAT:  m_nMode = nmFloat ; break;
-        case MYSQL_TYPE_NEWDECIMAL:  m_nMode = nmNewDemical ; break;
-        default: m_nMode = nmNone;
+        case MYSQL_TYPE_DOUBLE:         m_nMode = nmDouble; break;
+        case MYSQL_TYPE_FLOAT:          m_nMode = nmFloat ; break;
+        case MYSQL_TYPE_NEWDECIMAL:     m_nMode = nmNewDemical ; break;
+
+        case MYSQL_TYPE_TIMESTAMP:
+        case MYSQL_TYPE_DATE:
+        case MYSQL_TYPE_DATETIME:
+        case MYSQL_TYPE_TIME:
+            m_nMode = nmTime; break;
+
+        /*
+        case MYSQL_TYPE_STRING:
+        case MYSQL_TYPE_VAR_STRING:
+        case MYSQL_TYPE_VARCHAR:
+        case MYSQL_TYPE_JSON:
+            m_nMode = nmString; break;
+        */
+        default: m_nMode = nmString;
     }
 }
 
 Value::~Value()
-{
-    for (char* ptr : m_autoremove)
-    {
-        delete ptr;
-    }
-}
+{}
 
 std::string Value::operator()(const std::string &ifNull) const
 {
-    if (isNull()) return std::string(ifNull);
-    switch (getType(m_type))
-    {
-        case trString: return getString(); break;
-        case trTime:
-        {
-            time_t t = getCTime();
-            unsigned int len = strlen(std::ctime(&t));
-            std::string str(std::ctime(&t));
-            str.resize(len-1);
-            return str;
-        }
-        case trInt:
-    {
-        if (m_isUnsigned)
-        {
-            uint64_t result = getUInt64();
-            int move = SIZE64 - size() * SIZE_BYTE;
-            result = (result << move) >> move;
-            return std::to_string(result); break;
-        }
-        else
-        {
-            int64_t result = getInt64();
-            int move = SIZE64 - size() * SIZE_BYTE;
-            result = (result << move) >> move;
-            return std::to_string(result); break;
-        }
-    }
-        case trDouble : return std::to_string(toDouble()); break;
-    }
-    return std::string("NO STRING!");
+    return toString(ifNull);
 }
 
 std::string Value::toString(const std::string &ifNull) const
 {
+    if (isNull()) return ifNull;
+    switch (m_nMode)
+    {
+        case nmString :
+            return getString();
+
+        case nmU64      :
+            return std::to_string(getUInt64());
+
+        case nmS64      :
+        case nmU32      :
+        case nmS32      :
+        case nmU16      :
+        case nmU8       :
+        case nmS16      :
+        case nmS8       :
+            return std::to_string(toInt64());
+
+        case nmDouble       :
+        case nmNewDemical   :
+        case nmFloat        :
+            return std::to_string(getFloat());
+
+        case nmTime:
+    {
+            const MYSQL_TIME t = getMySQLTime();
+            char tstr[TIME_FORMAT_SIZE];
+            sprintf(tstr, TIME_FORMAT, t.year, t.month, t.day, t.hour, t.minute, t.second);
+            return std::string(tstr);
+    }
+
+        default : return 0;
+    }
+
+    /*
     if (isNull()) return std::string(ifNull);
     if (getType(m_type) == trString)
     {
         return getString();
     }
     else return std::string("NO STRING!");
+    */
 }
 
 uint32_t Value::toUInt(const unsigned int &ifNull) const
@@ -123,8 +138,7 @@ uint32_t Value::toUInt(const unsigned int &ifNull) const
 
         case nmDouble   : return static_cast<uint32_t>(getDouble());
         case nmFloat    : return static_cast<uint32_t>(getFloat());
-        case nmNewDemical : return 0;
-        case nmNone     : return 0;
+        default : return 0;
     }
 }
 
@@ -144,45 +158,35 @@ uint64_t Value::toUInt64(const unsigned int &ifNull) const
 
         case nmDouble   : return static_cast<uint64_t>(getDouble());
         case nmFloat    : return static_cast<uint64_t>(getFloat());
-        case nmNewDemical : return 0;
-        case nmNone     : return 0;
+        default : return 0;
     }
 }
 
 MYSQL_TIME Value::toMySQLTime() const
 {
-    if (    m_type == MYSQL_TYPE_TIMESTAMP||
-            m_type == MYSQL_TYPE_DATE ||
-            m_type == MYSQL_TYPE_DATETIME||
-            m_type == MYSQL_TYPE_TIME)
+    if (m_nMode == nmTime)
     {
         return getMySQLTime();
     }
-    return MYSQL_TIME {};
+    else return {};
 }
 
 time_t Value::toCTime() const
 {
-    if (    m_type == MYSQL_TYPE_TIMESTAMP||
-            m_type == MYSQL_TYPE_DATE ||
-            m_type == MYSQL_TYPE_DATETIME||
-            m_type == MYSQL_TYPE_TIME)
+    if (m_nMode == nmTime)
     {
         return getCTime();
     }
-    return {};
+    else return {};
 }
 
 std::chrono::time_point<std::chrono::system_clock> Value::toChronoTimePoint() const
 {
-    if (    m_type == MYSQL_TYPE_TIMESTAMP||
-            m_type == MYSQL_TYPE_DATE ||
-            m_type == MYSQL_TYPE_DATETIME||
-            m_type == MYSQL_TYPE_TIME)
+    if (m_nMode == nmTime)
     {
         return getChronoTimePoint();
     }
-    return {};
+    else return {};
 }
 
 int32_t Value::toInt(const int &ifNull) const
@@ -201,8 +205,7 @@ int32_t Value::toInt(const int &ifNull) const
 
         case nmDouble   : return static_cast<int32_t>(getDouble());
         case nmFloat    : return static_cast<int32_t>(getFloat());
-        case nmNewDemical : return 0;
-        case nmNone     : return 0;
+        default : return 0;
     }
 }
 
@@ -222,42 +225,59 @@ int64_t Value::toInt64(const int &ifNull) const
 
         case nmDouble   : return static_cast<int64_t>(getDouble());
         case nmFloat    : return static_cast<int64_t>(getFloat());
-        case nmNewDemical : return 0;
-        case nmNone     : return 0;
+        default : return 0;
     }
 }
 
 double Value::toDouble() const
 {
-    switch (m_type)
+    if (isNull()) return 0;
+    switch (m_nMode)
     {
-        case MYSQL_TYPE_DOUBLE: return getDouble();
-        case MYSQL_TYPE_FLOAT:  return static_cast<double>(getFloat());
-        case MYSQL_TYPE_NEWDECIMAL:
+        case nmDouble   : return                    (getDouble());
+        case nmFloat    : return static_cast<double>(getFloat());
+        case nmS64      : return static_cast<double>(getInt64());
+        case nmS32      : return static_cast<double>(getInt32());
+        case nmS16      : return static_cast<double>(getInt16());
+        case nmS8       : return static_cast<double>(getInt8());
+        case nmU64      : return static_cast<double>(getUInt64());
+        case nmU32      : return static_cast<double>(getUInt32());
+        case nmU16      : return static_cast<double>(getUInt16());
+        case nmU8       : return static_cast<double>(getUInt8());
+
+        case nmNewDemical :
         {
             char * begin = static_cast<char*>(m_buffer);
             char * end = begin + size();
             return std::strtod(begin, &end);
         }
-        default: if (getType(m_type) == trInt)
-        {
-            return static_cast<double>(getInt64());
-        }
-        else return 0;
+        default         : return 0;
     }
 }
 
 float Value::toFloat() const
 {
-    switch (m_type)
+    if (isNull()) return {};
+    switch (m_nMode)
     {
-        case MYSQL_TYPE_FLOAT:  return getFloat();
-        case MYSQL_TYPE_DOUBLE: return static_cast<float>(getDouble()); break;
-        default:  if (getType(m_type) == trInt)
+        case nmDouble   : return static_cast<float>(getDouble());
+        case nmFloat    : return                   (getFloat());
+        case nmS64      : return static_cast<float>(getInt64());
+        case nmS32      : return static_cast<float>(getInt32());
+        case nmS16      : return static_cast<float>(getInt16());
+        case nmS8       : return static_cast<float>(getInt8());
+        case nmU64      : return static_cast<float>(getUInt64());
+        case nmU32      : return static_cast<float>(getUInt32());
+        case nmU16      : return static_cast<float>(getUInt16());
+        case nmU8       : return static_cast<float>(getUInt8());
+
+        case nmNewDemical :
         {
-            return static_cast<float>(getInt64());
+            char * begin = static_cast<char*>(m_buffer);
+            char * end = begin + size();
+            return std::strtof(begin, &end);
         }
-        else return 0;
+        default         : return {};
     }
 }
 
@@ -273,59 +293,6 @@ std::string Value::getString() const
     return result;
 }
 
-int8_t Value::getInt8() const
-{
-    return *static_cast<int8_t*>(m_buffer);
-}
-
-int16_t Value::getInt16() const
-{
-    return *static_cast<int16_t*>(m_buffer);
-}
-
-int32_t Value::getInt32() const
-{
-    /*
-    int32_t result = *static_cast<int32_t*>(m_buffer);
-    if (size() < SIZE32)
-    {
-        int move = SIZE32 - size() * SIZE_BYTE;
-        result = (result << move) >> move;
-    }
-    return result;
-    */
-    return *static_cast<int32_t*>(m_buffer);
-}
-
-int64_t Value::getInt64() const
-{
-    return *static_cast<int64_t*>(m_buffer);
-}
-
-uint8_t Value::getUInt8() const
-{
-    return (*static_cast<uint8_t*>(m_buffer));
-}
-
-uint16_t Value::getUInt16() const
-{
-    return (*static_cast<uint8_t*>(m_buffer));
-}
-
-uint32_t Value::getUInt32() const
-{
-    return (*static_cast<uint32_t*>(m_buffer));
-}
-
-uint64_t Value::getUInt64() const
-{
-    return *static_cast<uint64_t*>(m_buffer);
-}
-
-MYSQL_TIME Value::getMySQLTime() const
-{
-    return *static_cast<MYSQL_TIME*>(m_buffer);
-}
 
 time_t Value::getCTime() const
 {
@@ -343,50 +310,4 @@ time_t Value::getCTime() const
 std::chrono::time_point<std::chrono::system_clock> Value::getChronoTimePoint() const
 {
     return std::chrono::system_clock::from_time_t(getCTime());
-}
-
-typeReturn Value::getType(const enum_field_types &AType) const
-{
-    switch (AType)
-    {
-        case MYSQL_TYPE_STRING:
-        case MYSQL_TYPE_VAR_STRING:
-        case MYSQL_TYPE_VARCHAR:
-        case MYSQL_TYPE_JSON:
-            return trString;
-            break;
-
-        case MYSQL_TYPE_TINY:
-        case MYSQL_TYPE_SHORT:
-        case MYSQL_TYPE_LONG:
-        case MYSQL_TYPE_LONGLONG:
-        case MYSQL_TYPE_INT24:
-        case MYSQL_TYPE_YEAR:
-        case MYSQL_TYPE_BIT:
-            return trInt;
-            break;
-
-        case MYSQL_TYPE_TIMESTAMP:
-        case MYSQL_TYPE_DATE:
-        case MYSQL_TYPE_DATETIME:
-        case MYSQL_TYPE_TIME:
-            return trTime;
-            break;
-        case MYSQL_TYPE_DOUBLE:
-        case MYSQL_TYPE_FLOAT:
-            return trDouble;
-            break;
-
-        default: return trString ;
-    }
-}
-
-double Value::getDouble() const
-{
-    return *static_cast<double*>(m_buffer);
-}
-
-float Value::getFloat() const
-{
-    return *static_cast<float*>(m_buffer);
 }
