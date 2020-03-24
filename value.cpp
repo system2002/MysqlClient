@@ -85,7 +85,7 @@ std::string Value::toString(const std::string &ifNull) const
             return getString();
 
         case nmU64      :
-            return std::to_string(getUInt64());
+            return std::to_string(fastUInt64());
 
         case nmS64      :
         case nmU32      :
@@ -99,11 +99,11 @@ std::string Value::toString(const std::string &ifNull) const
         case nmDouble       :
         case nmNewDemical   :
         case nmFloat        :
-            return std::to_string(getFloat());
+            return std::to_string(fastFloat());
 
         case nmTime:
     {
-            const MYSQL_TIME t = getMySQLTime();
+            const MYSQL_TIME t = fastMySQLTime();
             char tstr[TIME_FORMAT_SIZE];
             sprintf(tstr, TIME_FORMAT, t.year, t.month, t.day, t.hour, t.minute, t.second);
             return std::string(tstr);
@@ -127,17 +127,17 @@ uint32_t Value::toUInt(const unsigned int &ifNull) const
     if (isNull()) return ifNull;
     switch (m_nMode)
     {
-        case nmU64      : return static_cast<uint32_t>(getUInt64());
-        case nmU32      : return static_cast<uint32_t>(getUInt32());
-        case nmU16      : return static_cast<uint32_t>(getUInt16());
-        case nmU8       : return static_cast<uint32_t>(getUInt8());
-        case nmS64      : return static_cast<uint32_t>(getInt64());
-        case nmS32      : return static_cast<uint32_t>(getInt32());
-        case nmS16      : return static_cast<uint32_t>(getInt16());
-        case nmS8       : return static_cast<uint32_t>(getInt8());
+        case nmU64      : return static_cast<uint32_t>(fastUInt64());
+        case nmU32      : return static_cast<uint32_t>(fastUInt32());
+        case nmU16      : return static_cast<uint32_t>(fastUInt16());
+        case nmU8       : return static_cast<uint32_t>(fastUInt8());
+        case nmS64      : return static_cast<uint32_t>(fastInt64());
+        case nmS32      : return static_cast<uint32_t>(fastInt32());
+        case nmS16      : return static_cast<uint32_t>(fastInt16());
+        case nmS8       : return static_cast<uint32_t>(fastInt8());
 
-        case nmDouble   : return static_cast<uint32_t>(getDouble());
-        case nmFloat    : return static_cast<uint32_t>(getFloat());
+        case nmDouble   : return static_cast<uint32_t>(fastDouble());
+        case nmFloat    : return static_cast<uint32_t>(fastFloat());
         default : return 0;
     }
 }
@@ -147,17 +147,17 @@ uint64_t Value::toUInt64(const unsigned int &ifNull) const
     if (isNull()) return ifNull;
     switch (m_nMode)
     {
-        case nmU64      : return static_cast<uint64_t>(getUInt64());
-        case nmU32      : return static_cast<uint64_t>(getUInt32());
-        case nmU16      : return static_cast<uint64_t>(getUInt16());
-        case nmU8       : return static_cast<uint64_t>(getUInt8());
-        case nmS64      : return static_cast<uint64_t>(getInt64());
-        case nmS32      : return static_cast<uint64_t>(getInt32());
-        case nmS16      : return static_cast<uint64_t>(getInt16());
-        case nmS8       : return static_cast<uint64_t>(getInt8());
+        case nmU64      : return static_cast<uint64_t>(fastUInt64());
+        case nmU32      : return static_cast<uint64_t>(fastUInt32());
+        case nmU16      : return static_cast<uint64_t>(fastUInt16());
+        case nmU8       : return static_cast<uint64_t>(fastUInt8());
+        case nmS64      : return static_cast<uint64_t>(fastInt64());
+        case nmS32      : return static_cast<uint64_t>(fastInt32());
+        case nmS16      : return static_cast<uint64_t>(fastInt16());
+        case nmS8       : return static_cast<uint64_t>(fastInt8());
 
-        case nmDouble   : return static_cast<uint64_t>(getDouble());
-        case nmFloat    : return static_cast<uint64_t>(getFloat());
+        case nmDouble   : return static_cast<uint64_t>(fastDouble());
+        case nmFloat    : return static_cast<uint64_t>(fastFloat());
         default : return 0;
     }
 }
@@ -166,7 +166,7 @@ MYSQL_TIME Value::toMySQLTime() const
 {
     if (m_nMode == nmTime)
     {
-        return getMySQLTime();
+        return fastMySQLTime();
     }
     else return {};
 }
@@ -194,17 +194,17 @@ int32_t Value::toInt(const int &ifNull) const
     if (isNull()) return ifNull;
     switch (m_nMode)
     {
-        case nmS64      : return static_cast<int32_t>(getInt64());
-        case nmS32      : return static_cast<int32_t>(getInt32());
-        case nmS16      : return static_cast<int32_t>(getInt16());
-        case nmS8       : return static_cast<int32_t>(getInt8());
-        case nmU64      : return static_cast<int32_t>(getUInt64());
-        case nmU32      : return static_cast<int32_t>(getUInt32());
-        case nmU16      : return static_cast<int32_t>(getUInt16());
-        case nmU8       : return static_cast<int32_t>(getUInt8());
+        case nmS64      : return static_cast<int32_t>(fastInt64());
+        case nmS32      : return static_cast<int32_t>(fastInt32());
+        case nmS16      : return static_cast<int32_t>(fastInt16());
+        case nmS8       : return static_cast<int32_t>(fastInt8());
+        case nmU64      : return static_cast<int32_t>(fastUInt64());
+        case nmU32      : return static_cast<int32_t>(fastUInt32());
+        case nmU16      : return static_cast<int32_t>(fastUInt16());
+        case nmU8       : return static_cast<int32_t>(fastUInt8());
 
-        case nmDouble   : return static_cast<int32_t>(getDouble());
-        case nmFloat    : return static_cast<int32_t>(getFloat());
+        case nmDouble   : return static_cast<int32_t>(fastDouble());
+        case nmFloat    : return static_cast<int32_t>(fastFloat());
         default : return 0;
     }
 }
@@ -214,17 +214,17 @@ int64_t Value::toInt64(const int &ifNull) const
     if (isNull()) return ifNull;
     switch (m_nMode)
     {
-        case nmS64      : return static_cast<int64_t>(getInt64());
-        case nmS32      : return static_cast<int64_t>(getInt32());
-        case nmS16      : return static_cast<int64_t>(getInt16());
-        case nmS8       : return static_cast<int64_t>(getInt8());
-        case nmU64      : return static_cast<int64_t>(getUInt64());
-        case nmU32      : return static_cast<int64_t>(getUInt32());
-        case nmU16      : return static_cast<int64_t>(getUInt16());
-        case nmU8       : return static_cast<int64_t>(getUInt8());
+        case nmS64      : return static_cast<int64_t>(fastInt64());
+        case nmS32      : return static_cast<int64_t>(fastInt32());
+        case nmS16      : return static_cast<int64_t>(fastInt16());
+        case nmS8       : return static_cast<int64_t>(fastInt8());
+        case nmU64      : return static_cast<int64_t>(fastUInt64());
+        case nmU32      : return static_cast<int64_t>(fastUInt32());
+        case nmU16      : return static_cast<int64_t>(fastUInt16());
+        case nmU8       : return static_cast<int64_t>(fastUInt8());
 
-        case nmDouble   : return static_cast<int64_t>(getDouble());
-        case nmFloat    : return static_cast<int64_t>(getFloat());
+        case nmDouble   : return static_cast<int64_t>(fastDouble());
+        case nmFloat    : return static_cast<int64_t>(fastFloat());
         default : return 0;
     }
 }
@@ -234,16 +234,16 @@ double Value::toDouble() const
     if (isNull()) return 0;
     switch (m_nMode)
     {
-        case nmDouble   : return                    (getDouble());
-        case nmFloat    : return static_cast<double>(getFloat());
-        case nmS64      : return static_cast<double>(getInt64());
-        case nmS32      : return static_cast<double>(getInt32());
-        case nmS16      : return static_cast<double>(getInt16());
-        case nmS8       : return static_cast<double>(getInt8());
-        case nmU64      : return static_cast<double>(getUInt64());
-        case nmU32      : return static_cast<double>(getUInt32());
-        case nmU16      : return static_cast<double>(getUInt16());
-        case nmU8       : return static_cast<double>(getUInt8());
+        case nmDouble   : return                    (fastDouble());
+        case nmFloat    : return static_cast<double>(fastFloat());
+        case nmS64      : return static_cast<double>(fastInt64());
+        case nmS32      : return static_cast<double>(fastInt32());
+        case nmS16      : return static_cast<double>(fastInt16());
+        case nmS8       : return static_cast<double>(fastInt8());
+        case nmU64      : return static_cast<double>(fastUInt64());
+        case nmU32      : return static_cast<double>(fastUInt32());
+        case nmU16      : return static_cast<double>(fastUInt16());
+        case nmU8       : return static_cast<double>(fastUInt8());
 
         case nmNewDemical :
         {
@@ -260,16 +260,16 @@ float Value::toFloat() const
     if (isNull()) return {};
     switch (m_nMode)
     {
-        case nmDouble   : return static_cast<float>(getDouble());
-        case nmFloat    : return                   (getFloat());
-        case nmS64      : return static_cast<float>(getInt64());
-        case nmS32      : return static_cast<float>(getInt32());
-        case nmS16      : return static_cast<float>(getInt16());
-        case nmS8       : return static_cast<float>(getInt8());
-        case nmU64      : return static_cast<float>(getUInt64());
-        case nmU32      : return static_cast<float>(getUInt32());
-        case nmU16      : return static_cast<float>(getUInt16());
-        case nmU8       : return static_cast<float>(getUInt8());
+        case nmDouble   : return static_cast<float>(fastDouble());
+        case nmFloat    : return                   (fastFloat());
+        case nmS64      : return static_cast<float>(fastInt64());
+        case nmS32      : return static_cast<float>(fastInt32());
+        case nmS16      : return static_cast<float>(fastInt16());
+        case nmS8       : return static_cast<float>(fastInt8());
+        case nmU64      : return static_cast<float>(fastUInt64());
+        case nmU32      : return static_cast<float>(fastUInt32());
+        case nmU16      : return static_cast<float>(fastUInt16());
+        case nmU8       : return static_cast<float>(fastUInt8());
 
         case nmNewDemical :
         {
@@ -296,7 +296,7 @@ std::string Value::getString() const
 
 time_t Value::getCTime() const
 {
-    MYSQL_TIME mt = getMySQLTime();
+    MYSQL_TIME mt = fastMySQLTime();
     std::tm timeTm;
     timeTm.tm_year  = mt.year - 1900;
     timeTm.tm_mon   = mt.month - 1;

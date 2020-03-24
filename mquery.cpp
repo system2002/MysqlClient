@@ -18,7 +18,7 @@ bool MQuery::exec(const std::string &Aquery)
     if (!isConnected()) return false;
     if (mysql_stmt_prepare(m_stmt, Aquery.c_str(), Aquery.size()) != 0) return false;
     m_result = mysql_stmt_result_metadata(m_stmt);
-    if (m_result == nullptr) return false;
+    //if (m_result == nullptr) return false;
     if (mysql_stmt_execute(m_stmt)) return false;
     my_bool setMax = true;
     mysql_stmt_attr_set(m_stmt, STMT_ATTR_UPDATE_MAX_LENGTH, &setMax);
@@ -66,14 +66,16 @@ Value MQuery::value(const unsigned int AColumn)
 
 std::set<std::string> MQuery::strToSet(const std::string &AStr)
 {
-    /*
-    regex reg("^|,\W,");
-    string str("qweqew,qweq,qwe1,qwe2,qwe3,qew");
-    //match_results<string> result;
+    std::set<std::string> result;
+    std::string search = AStr;
+    std::regex reg("[^,]+");
     std::smatch match;
-    regex_search(str, match, reg);
-    cout << match.size();
-    */
+    while (regex_search(search, match, reg))
+    {
+        result.insert(match[0]);
+        search = match.suffix().str();
+    }
+    return result;
 }
 
 bool MQuery::initSTMT()

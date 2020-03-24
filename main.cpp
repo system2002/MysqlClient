@@ -6,16 +6,79 @@
 #include <string>
 #include <map>
 #include <chrono>
-#define SELECT_SAMPLE "SELECT set1, now() from test "
+#define SELECT_SAMPLE "SELECT Код, НастройкаШага, Изображение from checking_step"
+
+#define SQL1 "CALL tt() "
+//#define SQL1 "SELECT 1 + 1"
+
+#define SQL2 "CALL tmp_checking_step_exists(9) "
+#define SQL3 "SELECT tcs.`Изображение` from tmp_checking_step AS tcs WHERE tcs.`Изображение` IS NOT NULL "
+#define SQL4 "CALL tmp_checking_step_drop() "
+
+//#define SELECT_SAMPLE "SHOW TABLES "
 //#define SELECT_SAMPLE "SELECT * from fr_dl11_import"
 using namespace std;
 
 int main()
 {
-    bool test = true;
+    bool test = false;
 
     if (test)
     {
+        /*
+        Simple s("dev-mysql", "igp", "123", "aap");
+        if (!s.isConnected())
+        {
+            cout << s.lastErrorText() << endl;
+            exit(1);
+        }
+        std::chrono::time_point<std::chrono::system_clock> start, end;
+        start = std::chrono::system_clock::now();
+        if (!s.exec(SQL1))
+        {
+            cout << s.lastErrorText() << endl;
+            exit(11);
+        }
+        if (!s.exec(SQL2))
+        {
+            cout << s.lastErrorText() << endl;
+            exit(22);
+        }
+        if (!s.exec(SQL3))
+        {
+            cout << s.lastErrorText() << endl;
+            exit(33);
+        }
+        for (unsigned int i = 0; i < s.colCount(); i++)
+        {
+            cout <<"col["<< i << "] name:" << s.column(i).name() << endl;
+            cout <<"col["<< i << "] type str:" << s.column(i).typeString() << endl;
+            cout <<"col["<< i << "] type:" << s.column(i).type() << endl;
+            cout <<"col["<< i << "] length:" << s.column(i).length() << endl;
+            cout <<"col["<< i << "] max length:" << s.column(i).maxLength()<< endl;
+            cout <<"col["<< i << "] pk:" << s.column(i).isPrimaryKey() << endl;
+            cout <<"col["<< i << "] unsigned:" << s.column(i).isUnsigned() << endl;
+            cout <<"col["<< i << "] isNotNull:" << s.column(i).isNotNul() << endl;
+        }
+
+
+        while (s.next())
+        {
+            for (unsigned int i = 0; i < s.colCount(); i++)
+            {
+                cout << s.valueStr(i) << " u:"<< s.column(i).isUnsigned() <<  "\t|";
+            }
+            cout << endl;
+        }
+        end = std::chrono::system_clock::now();
+        int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds>
+                                     (end-start).count();
+        std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+
+        std::cout << "Вычисления закончены в " << std::ctime(&end_time)
+                      << "Время выполнения: " << elapsed_seconds << "ms";
+*/
+
         MQuery q("dev-mysql", "igp", "123", "test");
   //      MQuery q("192.168.0.5", "system", "1234", "test");
         if (!q.isConnected())
@@ -23,14 +86,19 @@ int main()
             cout << q.lastErrorText() << endl;
             exit(1);
         }
+        std::chrono::time_point<std::chrono::system_clock> start, end;
+        start = std::chrono::system_clock::now();
         cout << "connect Ok" << endl;
-        if (!q.exec(SELECT_SAMPLE))
+
+
+        if (!q.exec(SQL1))
         {
             cout << q.lastErrorText() << endl;
             exit(2);
         }
         cout << "select Ok" << endl;
         cout << "col count:" << q.colCount() << endl;
+
 
         for (unsigned int i = 0; i < q.colCount(); i++)
         {
@@ -44,6 +112,7 @@ int main()
             cout <<"col["<< i << "] isNotNull:" << q.column(i).isNotNul() << endl;
         }
 
+
         while (q.next())
         {
             for (unsigned int i = 0; i < q.colCount(); i++)
@@ -52,21 +121,14 @@ int main()
             }
             cout << endl;
         }
-        if (!q.exec("select * from tree"))
-        {
-            cout << q.lastErrorText() << endl;
-            exit(2);
-        }
-        while (q.next())
-        {
-            //cout <<"# " << endl;
-            //cout << q.column(0).maxLength() << endl;
-            for (unsigned int i = 0; i < q.colCount(); i++)
-            {
-               // cout << q.value(i).toString() << " size: "<< q.value(i).size() << " | ";
-            }
-           // cout << endl;
-        }
+        end = std::chrono::system_clock::now();
+        int elapsed_seconds = std::chrono::duration_cast<std::chrono::microseconds>
+                                     (end-start).count();
+        std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+
+        std::cout << "Вычисления закончены в " << std::ctime(&end_time)
+                      << "Время выполнения: " << elapsed_seconds << "ms";
+
 //        cout << q.lastErrorText()<< endl;
 
     }
@@ -98,7 +160,7 @@ int main()
             exit(0);
         }
         cout << "stmt init ok" << endl;
-        const char* sql = "SELECT 1, 'abc', 11, now()";
+        const char* sql = "call tt() ";
         if (mysql_stmt_prepare(stmt, sql, strlen(sql)) !=0 )
         {
             cout << "mysql_stmt_prepare(), SELECT failed\n" << endl;

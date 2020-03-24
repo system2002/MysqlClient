@@ -48,6 +48,18 @@ public:
 
     std::chrono::time_point<std::chrono::system_clock> toChronoTimePoint() const;
 
+    inline int8_t      fastInt8()   const { return *static_cast<int8_t*>  (m_buffer); }
+    inline int16_t     fastInt16()  const { return *static_cast<int16_t*> (m_buffer); }
+    inline int32_t     fastInt32()  const { return *static_cast<int32_t*> (m_buffer); }
+    inline int64_t     fastInt64()  const { return *static_cast<int64_t*> (m_buffer); }
+    inline uint8_t     fastUInt8()  const { return *static_cast<uint8_t*> (m_buffer); }
+    inline uint16_t    fastUInt16() const { return *static_cast<uint16_t*>(m_buffer); }
+    inline uint32_t    fastUInt32() const { return *static_cast<uint32_t*>(m_buffer); }
+    inline uint64_t    fastUInt64() const { return *static_cast<uint64_t*>(m_buffer); }
+    inline double      fastDouble() const { return *static_cast<double*>  (m_buffer); }
+    inline float       fastFloat()  const { return *static_cast<float*>   (m_buffer); }
+    inline MYSQL_TIME  fastMySQLTime() const {return *static_cast<MYSQL_TIME*>(m_buffer);}
+
     inline unsigned long    length()     const { return m_length; }
     inline unsigned long    size()       const { return m_length; }
     inline bool             isNull()     const { return *m_bind.is_null;}
@@ -64,19 +76,6 @@ private:
     numberMode m_nMode;
 
     std::string getString() const;
-    inline int8_t      getInt8()   const { return *static_cast<int8_t*>  (m_buffer); }
-    inline int16_t     getInt16()  const { return *static_cast<int16_t*> (m_buffer); }
-    inline int32_t     getInt32()  const { return *static_cast<int32_t*> (m_buffer); }
-    inline int64_t     getInt64()  const { return *static_cast<int64_t*> (m_buffer); }
-    inline uint8_t     getUInt8()  const { return *static_cast<uint8_t*> (m_buffer); }
-    inline uint16_t    getUInt16() const { return *static_cast<uint16_t*>(m_buffer); }
-    inline uint32_t    getUInt32() const { return *static_cast<uint32_t*>(m_buffer); }
-    inline uint64_t    getUInt64() const { return *static_cast<uint64_t*>(m_buffer); }
-
-    inline double      getDouble() const { return *static_cast<double*>  (m_buffer); }
-    inline float       getFloat()  const { return *static_cast<float*>   (m_buffer); }
-
-    inline MYSQL_TIME  getMySQLTime() const {return *static_cast<MYSQL_TIME*>(m_buffer);}
     time_t getCTime() const;
 
     std::chrono::time_point<std::chrono::system_clock> getChronoTimePoint() const;
